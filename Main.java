@@ -19,7 +19,9 @@ public class Main {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         Pathfinder pf = new Pathfinder();
         readPaths(in, pf);
-
+        long start = System.currentTimeMillis();
+        System.out.println(pf.solve());
+        System.out.println("Solved in " + (System.currentTimeMillis() - start) +"ms");
     }
     
 }

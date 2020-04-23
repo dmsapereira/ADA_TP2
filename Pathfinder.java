@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 public class Pathfinder {
 
@@ -20,39 +19,66 @@ public class Pathfinder {
         this.nodes.put(0, new HashSet<>());
     }
     
-    private int getPosition(int x, int y){
+    private int getCodedPosition(int x, int y){
         return (x * MAX_POS + y);
     }
 
-    private int bfsExplore(){
+    private int[] getPosition(int codedPosition){
+        int[] position = new int[2];
+        position[1] =  Math.floorMod(codedPosition, MAX_POS);
+        position[0] = (codedPosition - position[1]) / MAX_POS;
+
+        return position;
+    }
+
+    public int solve(){
         Set<Integer> found = new HashSet<>();
-        List<Integer> waiting = new LinkedList<>();
-        waiting.add(this.lastNode);
+        List<Integer> waiting1 = new LinkedList<>();
+        List<Integer> waiting2 = new LinkedList<>();
+        boolean listFlag = true;
+        waiting1.add(this.lastNode);
         found.add(this.lastNode);
 
-        int steps = 1;
+        int steps = 0;
 
         do{
-            int node = waiting.remove(0);
+            int node = listFlag ? waiting1.remove(0) : waiting2.remove(0);
+
+            int[] position = this.getPosition(node);
+
+            System.out.println("Current node is " + position[0] + ":" + position[1]);
 
             if(node == 0)
                 return steps;
 
             for(int outgoing : this.nodes.get(node)){
                 if(!found.contains(outgoing)){
-                    waiting.add(outgoing);
+                    if (listFlag)
+                        waiting2.add(outgoing);
+                    else 
+                        waiting1.add(outgoing);
                     found.add(outgoing);
                 }
             }
-        }while(!waiting.isEmpty());
+
+            if(waiting1.isEmpty()){
+                listFlag = false;
+                steps++;
+            }else if(waiting2.isEmpty()){
+                listFlag = true;
+                steps++;
+            }
+        }while(!waiting1.isEmpty() || !waiting2.isEmpty());
 
         return -1;
     }
 
     public void nextStep(char direction){
 
-        int nextX = this.lastNode / MAX_POS;
-        int nextY = this.lastNode % MAX_POS;
+        int[] position = this.getPosition(this.lastNode);
+
+        int nextY = position[1];
+        int nextX = position[0];
 
         switch(direction){
             case 'N':
@@ -68,7 +94,8 @@ public class Pathfinder {
                 nextX--;
                 break;
         }
-        int nextNode = this.getPosition(nextX, nextY);
+
+        int nextNode = this.getCodedPosition(nextX, nextY);
 
         Set<Integer> connected;
 
