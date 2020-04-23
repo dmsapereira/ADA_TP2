@@ -9,32 +9,20 @@ public class Pathfinder {
 
     public static final int STEPS_PER_LINE = 80;
     public static final int MAX_POS = 250000;
-    private Map<Integer, Set<Integer>> nodes;
-    private int lastNode;
+    private Map<Long, Set<Long>> nodes;
+    private long lastNode;
 
     
     public Pathfinder(){
         this.nodes = new HashMap<>();
         this.lastNode = 0;
-        this.nodes.put(0, new HashSet<>());
-    }
-    
-    private int getCodedPosition(int x, int y){
-        return (x * MAX_POS + y);
-    }
-
-    private int[] getPosition(int codedPosition){
-        int[] position = new int[2];
-        position[1] =  Math.floorMod(codedPosition, MAX_POS);
-        position[0] = (codedPosition - position[1]) / MAX_POS;
-
-        return position;
+        this.nodes.put(0L, new HashSet<>());
     }
 
     public int solve(){
-        Set<Integer> found = new HashSet<>();
-        List<Integer> waiting1 = new LinkedList<>();
-        List<Integer> waiting2 = new LinkedList<>();
+        Set<Long> found = new HashSet<>();
+        List<Long> waiting1 = new LinkedList<>();
+        List<Long> waiting2 = new LinkedList<>();
         boolean listFlag = true;
         waiting1.add(this.lastNode);
         found.add(this.lastNode);
@@ -42,16 +30,13 @@ public class Pathfinder {
         int steps = 0;
 
         do{
-            int node = listFlag ? waiting1.remove(0) : waiting2.remove(0);
+            long node = listFlag ? waiting1.remove(0) : waiting2.remove(0);            
+            
+            for(long outgoing : this.nodes.get(node)){
+                
+                if(outgoing == 0)
+                    return steps + 1;
 
-            int[] position = this.getPosition(node);
-
-            System.out.println("Current node is " + position[0] + ":" + position[1]);
-
-            if(node == 0)
-                return steps;
-
-            for(int outgoing : this.nodes.get(node)){
                 if(!found.contains(outgoing)){
                     if (listFlag)
                         waiting2.add(outgoing);
@@ -61,10 +46,10 @@ public class Pathfinder {
                 }
             }
 
-            if(waiting1.isEmpty()){
+            if(listFlag && waiting1.isEmpty()){
                 listFlag = false;
                 steps++;
-            }else if(waiting2.isEmpty()){
+            }else if(!listFlag && waiting2.isEmpty()){
                 listFlag = true;
                 steps++;
             }
@@ -75,29 +60,24 @@ public class Pathfinder {
 
     public void nextStep(char direction){
 
-        int[] position = this.getPosition(this.lastNode);
-
-        int nextY = position[1];
-        int nextX = position[0];
+        long nextNode = this.lastNode;
 
         switch(direction){
             case 'N':
-                nextY++;
+                nextNode++;
                 break;
             case 'E':
-                nextX++;
+                nextNode += MAX_POS;
                 break;
             case 'S':
-                nextY--;
+                nextNode--;
                 break;
             case 'W':
-                nextX--;
+                nextNode -= MAX_POS;
                 break;
         }
 
-        int nextNode = this.getCodedPosition(nextX, nextY);
-
-        Set<Integer> connected;
+        Set<Long> connected;
 
         if(!this.nodes.containsKey(nextNode)){
             connected = new HashSet<>();
