@@ -1,48 +1,61 @@
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Pathfinder {
 
     public static final int STEPS_PER_LINE = 80;
-    public static final int MAX_POS = 250000;
-    private Map<Long, Set<Long>> nodes;
+    public static final int MAX_POS = 250001;
+    private Map<Long, Integer> nodes;
+    private List<Integer>[] connected;
     private long lastNode;
+    private int counter, lastNodeIndex;
 
-    
-    public Pathfinder(){
+    public Pathfinder(int nLines){
         this.nodes = new HashMap<>();
+        this.buildArray(nLines);
+        this.counter = 0;
         this.lastNode = 0;
-        this.nodes.put(0L, new HashSet<>());
+        this.lastNodeIndex = 0;
+        this.nodes.put(0L, this.counter++);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void buildArray(int nLines){
+        this.connected = new List[nLines * STEPS_PER_LINE + 1];
+
+        for(int i = 0; i < this.connected.length; i++)
+            this.connected[i] = new LinkedList<>();
     }
 
     public int solve(){
-        Set<Long> found = new HashSet<>();
-        List<Long> waiting1 = new LinkedList<>();
-        List<Long> waiting2 = new LinkedList<>();
+        boolean[] found = new boolean[this.nodes.size()];
+        
         boolean listFlag = true;
-        waiting1.add(this.lastNode);
-        found.add(this.lastNode);
+        List<Integer> waiting1 = new LinkedList<>();
+        List<Integer> waiting2 = new LinkedList<>();
 
         int steps = 0;
+        
+        waiting1.add(this.lastNodeIndex);
+        found[this.lastNodeIndex] = true;
 
         do{
-            long node = listFlag ? waiting1.remove(0) : waiting2.remove(0);            
+            int node = listFlag ? waiting1.remove(0) : waiting2.remove(0);  
             
-            for(long outgoing : this.nodes.get(node)){
+            if(node == 0)
+                return steps;
+           
+            for(int outgoing : this.connected[node]){
                 
-                if(outgoing == 0)
-                    return steps + 1;
 
-                if(!found.contains(outgoing)){
+                if(!found[outgoing]){
                     if (listFlag)
                         waiting2.add(outgoing);
                     else 
                         waiting1.add(outgoing);
-                    found.add(outgoing);
+                    found[outgoing] = true;
                 }
             }
 
@@ -77,18 +90,19 @@ public class Pathfinder {
                 break;
         }
 
-        Set<Long> connected;
+        int nextNodeIndex;
 
         if(!this.nodes.containsKey(nextNode)){
-            connected = new HashSet<>();
-            this.nodes.put(nextNode, connected);
-        }else
-            connected = this.nodes.get(nextNode);
-
-        this.nodes.get(this.lastNode).add(nextNode);
-
-        connected.add(this.lastNode);
+            nextNodeIndex = this.counter++;
+            this.nodes.put(nextNode, nextNodeIndex);
+        }else 
+            nextNodeIndex = this.nodes.get(nextNode);
+        
+        
+            this.connected[this.lastNodeIndex].add(nextNodeIndex);
+            this.connected[nextNodeIndex].add(this.lastNodeIndex);
 
         this.lastNode = nextNode; 
+        this.lastNodeIndex = nextNodeIndex;
     }
 }

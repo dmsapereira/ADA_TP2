@@ -4,9 +4,7 @@ import java.io.InputStreamReader;
 
 public class Main {
 
-    private static void readPaths(BufferedReader in, Pathfinder pf) throws IOException {
-        int nLines = Integer.parseInt(in.readLine());
-
+    private static void readPaths(BufferedReader in, Pathfinder pf, int nLines) throws IOException {
         for(int i = 0; i < nLines; i++){      
             String line = in.readLine();
             
@@ -17,8 +15,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException{
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        Pathfinder pf = new Pathfinder();
-        readPaths(in, pf);
+        int nLines = Integer.parseInt(in.readLine());
+        Pathfinder pf = new Pathfinder(nLines);
+        readPaths(in, pf, nLines);
         System.out.println(pf.solve());
     }
     
